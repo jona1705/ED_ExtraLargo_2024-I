@@ -8,19 +8,29 @@ void intercambiar(int * a, int * b){
 
 void burbuja(int * arr, int n){
     int i, j, temp;
+    int swapped;
+    int pasos = 0;
     // El bucle externo maneja el número de pasos
     // El bucle interno maneja el número de iteraciones
-    for(int i=0; i<n-1; i++){
-        for(int j=0; j<n-1; j++){
+    for(i=0; i<n-1; i++){
+    	swapped = 0;
+        for(j=0; j<n-i-1; j++){
             if(arr[j]>arr[j+1]){
                 intercambiar(&arr[j], &arr[j+1]);
+                swapped = 1;
             }    
         }
+        pasos++;
+        // Si no hubo intercambios en el bucle interno, el arreglo esta ordenado
+        if (swapped == 0)
+            break;
     }
+    printf("\nNumero de pasos: %d\n", pasos);
 }
 
 void desplegar(int arr[], int n){
-    for(int i=0; i<n; i++){
+	int i;
+    for(i=0; i<n; i++){
         printf("%d ", arr[i]);
     }
 }

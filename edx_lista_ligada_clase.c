@@ -1,11 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct punto{
-    int x;
-    int y;
-};
-
 struct nodo{
     int dato;
     struct nodo * siguiente;
@@ -85,63 +80,6 @@ struct nodo * borrar_inicio(struct nodo * cabecera){
     return cabecera;
 }
 
-int contar_nodos(struct nodo * cabecera){
-    if(cabecera == NULL){
-        // Si la lista vacia
-        return 0;
-    } else{
-        struct nodo * temp = cabecera;
-        int cont = 0;
-        while(temp != NULL){
-            temp = temp->siguiente;
-            cont++;
-        }
-        return cont;
-    }
-}
-
-struct nodo * insertar_intermedio(struct nodo * cabecera, int pos, int x){
-    struct nodo * nuevo = crearNodo(x);
-    // Se toma el 0 como posicion valida
-    int noNodos = contar_nodos(cabecera);
-    if(pos<0 || pos>noNodos+1){
-    	// Rango: [0, pos]
-        printf("Posicion invalida\n");
-        return NULL;
-    } else if(pos == 0){
-    	// Insertamos un nodo en la primer posicion
-    	if(cabecera == NULL) {
-    		// Si la lista esta vacia
-    		// es primer nodo en la lista
-        	cabecera = nuevo;
-    	} else{
-    		// Si hay mas nodos el nuevo nodo pasa
-    		// a ser el primero
-    		nuevo->siguiente = cabecera;
-        	cabecera = nuevo;
-		}    
-    } else{
-        struct nodo * temp = cabecera;
-        int i=0;
-        while(i<pos-1){ // <-- Linea corregida
-        	// Recorremos la lista hasta el (pos-1)-th nodo
-            temp = temp->siguiente; // (pos-1)-th nodo
-            i++;
-        }
-        if(temp->siguiente == NULL){
-        	// Si el (pos-1)-th nodo es el ultimo
-        	// El nuevo nodo sera el ultimo
-        	temp->siguiente = nuevo;
-		} else{
-			// El nodo se inserta en una posiciï¿½n intermedia
-			nuevo->siguiente = temp->siguiente;
-        	temp->siguiente = nuevo;
-		}    
-    }
-    
-    return cabecera;
-}
-
 struct nodo * borrar_final(struct nodo * cabecera){
     struct nodo * temp = cabecera;
     struct nodo * prev = NULL;
@@ -157,7 +95,7 @@ struct nodo * borrar_final(struct nodo * cabecera){
             prev = temp;
             temp = temp->siguiente;
         }
-        // 1) Â¿Que sucede cuando solo queda un nodo en la lista?
+        // 1) ¿Que sucede cuando solo queda un nodo en la lista?
         if(temp == cabecera){
             // Solo queda un nodo en la lista
             cabecera = NULL; 
@@ -170,55 +108,31 @@ struct nodo * borrar_final(struct nodo * cabecera){
     return cabecera;
 }
 
-struct nodo * borrar_intermedio(struct nodo * cabecera, int pos){
-    if(cabecera == NULL) {
-        printf("Lista Vacia!!\n");
-        return NULL;
-    } else {
-        // Se toma el 0 como posicion valida
-        int noNodos = contar_nodos(cabecera);
-        if(pos<0 || pos>noNodos){
-        	// Rango: [0, pos-1]
-            printf("Posicion invalida\n");
-            return NULL;
-        } else {
-            struct nodo * temp = NULL;
-            if(pos == 0){
-            	// Borramos el primer nodo en la lista
-                temp = cabecera;
-                if(temp->siguiente == NULL){
-                	// Si solo queda un nodo en la lista
-                	cabecera = NULL;
-				} else{
-					// Si hay mas nodos el nodo cabecera
-					// serï¿½ el segundo
-					cabecera = cabecera->siguiente;
-				}
-                free(temp);
-            } else{
-                int i=0;
-                temp = cabecera;
-                while(i<pos-1){ // <-- Linea corregida
-                	// Recorremos la lista hasta el (pos-1)-th nodo
-                    temp = temp->siguiente; // (pos-1)-th nodo
-                    i++;
-                }
-                struct nodo * borrado = temp->siguiente; // (pos)-th nodo
-                if(borrado->siguiente == NULL){
-                	// Si borramos el ultimo nodo
-                	// el nodo previo serï¿½ el ï¿½ltimo
-                	temp->siguiente = NULL; // El nodo (pos-1)-th en su parte sig apunta a NULL 
-				} else{
-					// El nodo previo pasa a apuntar al nodo
-					// que sigue al nodo a ser borrado
-					temp->siguiente = borrado->siguiente; // (pos+1)-th nodo
-				}
-                free(borrado);
-            }
-        }
-    }
-    
-    return cabecera;
+void intercambiar(struct nodo * a, struct nodo * b){
+    int temp = a->dato;
+    a->dato = b->dato;
+    b->dato = temp;
+}
+
+// Funcion basada en el algoritmo de la burbuja (mejorada)
+void ordenar(struct nodo * cabecera){
+	if(cabecera == NULL || cabecera->siguiente == NULL){
+		// Si la lista esta vacia o tiene un elemento se considera ordenada
+		return;
+	}
+	int swapped; // Bandera para verificar los intercambios
+	// Empezamos a iterar
+	do{
+		swapped = 0;
+		struct nodo * temp = cabecera;
+		while(temp->siguiente != NULL){
+			if(temp->dato > temp->siguiente->dato){
+				intercambiar(temp, temp->siguiente);
+				swapped = 1;
+			}
+			temp = temp->siguiente;
+		}
+	} while(swapped);
 }
 
 int main(){
@@ -270,10 +184,6 @@ int main(){
     cabecera = insertar_final(cabecera, 14);
     cabecera = insertar_final(cabecera, 25);
     desplegar(cabecera);
-    // Probar la funcion insertar_intermedio
-    cabecera = insertar_intermedio(cabecera, 1, 23);
-    cabecera = insertar_intermedio(cabecera, 4, 17);
-    desplegar(cabecera);
     
     printf("Operaciones de Borrado: \n");
     // Probar la funcion borrar_inicio
@@ -284,198 +194,13 @@ int main(){
     cabecera = borrar_final(cabecera);
     cabecera = borrar_final(cabecera);
     desplegar(cabecera);
-    // Probar la funcion borrar_intermedio
-    cabecera = borrar_intermedio(cabecera, 0);
-    cabecera = borrar_intermedio(cabecera, 4);
-    cabecera = borrar_intermedio(cabecera, 6);
-    cabecera = borrar_intermedio(cabecera, 1);
-    //cabecera = borrar_intermedio(cabecera, 10);
+    
+    printf("Lista Ordenada: \n");
+    ordenar(cabecera);
     desplegar(cabecera);
 
 
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
