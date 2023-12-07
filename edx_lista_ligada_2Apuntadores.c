@@ -24,88 +24,92 @@ void desplegar(struct nodo * cabecera){
     printf("NULL\n");
 }
 
-struct nodo * insertar_inicio(struct nodo * cabecera, int x){
+void insertar_inicio(struct nodo ** cabecera, struct nodo ** final, int x){
     struct nodo * nuevo = crearNodo(x);
-    if(cabecera == NULL){
+    if(*cabecera == NULL){
         // La lista ligada estas vacia
         // Vamos a insertar el primer nodo
-        cabecera = nuevo;
+        *cabecera = nuevo;
+        *final = nuevo;
     } else{
         // Hay mas nodos en la lista
-        nuevo->siguiente = cabecera;
-        cabecera = nuevo;
+        nuevo->siguiente = *cabecera;
+        *cabecera = nuevo;
     }
-    return cabecera;
 }
 
-struct nodo * insertar_final(struct nodo * cabecera, int x){
+void insertar_final(struct nodo ** cabecera, struct nodo ** final, int x){
     struct nodo * nuevo = crearNodo(x);
-    if(cabecera == NULL){
+    if(*cabecera == NULL){
         // La lista ligada estas vacia
         // Vamos a insertar el primer nodo
-        cabecera = nuevo;
+        *cabecera = nuevo;
+        *final = nuevo;
     } else{
         // Hay mas nodos en la lista
-        struct nodo * temp = cabecera;
-        while(temp->siguiente != NULL){
-            // Nos movemos hasta el ultimo nodo
-            temp = temp->siguiente;
-        }
         // El ultimo nodo apunta al nuevo
-        temp->siguiente = nuevo;
+        (*final)->siguiente = nuevo;
+        *final = nuevo;
     }
-    return cabecera;
 }
 
-struct nodo * borrar_inicio(struct nodo * cabecera){
-    if(cabecera == NULL){
+void borrar_inicio(struct nodo ** cabecera, struct nodo ** final){
+    if(*cabecera == NULL){
         // La lista ligada estas vacia
         // Nada que hacer
         // Underflow (Subdesbordamiento) vs Overflow (Desbordamiento)
-        return NULL;
+        return;
     } else{
         // Hay mas nodos en la lista
-        // 1) Â¿Que sucede cuando solo queda un nodo en la lista?
-        struct nodo * temp = cabecera;
+        // 1) ¿Que sucede cuando solo queda un nodo en la lista?
+        struct nodo * temp = *cabecera;
         if(temp->siguiente == NULL){
             // Solo queda un nodo en la lista
-            cabecera = NULL;
+            *cabecera = *final = NULL;
         } 
-        // 2) Â¿Que sucede cuando hay mas nodos en la lista?
+        // 2) ¿Que sucede cuando hay mas nodos en la lista?
         else{
-            cabecera = cabecera->siguiente;
+            *cabecera = (*cabecera)->siguiente;
         }
         free(temp);
     }
-    return cabecera;
 }
 
-struct nodo * borrar_final(struct nodo * cabecera){
-    struct nodo * temp = cabecera;
+void borrar_final(struct nodo ** cabecera, struct nodo ** final){
     struct nodo * prev = NULL;
-    if(cabecera == NULL){
+    if(*cabecera == NULL){
         // La lista ligada estas vacia
         // Nada que hacer
         // Underflow (Subdesbordamiento) vs Overflow (Desbordamiento)
-        return cabecera;
+        return;
     } else{
         // Hay mas nodos en la lista
+        struct nodo * temp = *cabecera;
         while(temp->siguiente != NULL){
             // Nos movemos hasta el previo y ultimo nodo
             prev = temp;
             temp = temp->siguiente;
         }
         // 1) ¿Que sucede cuando solo queda un nodo en la lista?
-        if(temp == cabecera){
+        if(temp->siguiente == *cabecera){
             // Solo queda un nodo en la lista
-            cabecera = NULL; 
+            *cabecera = *final = NULL; 
         } else{  
             // El ultimo nodo apunta al nuevo
             prev->siguiente = NULL;
+            *final = prev;
+            
         }
         free(temp);    
     }
-    return cabecera;
+}
+
+int frente(struct nodo * cabecera){
+	return cabecera->dato;
+}
+
+int final_(struct nodo * final){
+	return final->dato;
 }
 
 void intercambiar(struct nodo * a, struct nodo * b){
@@ -168,7 +172,7 @@ struct nodo * buscar(struct nodo * cabecera, int clave){
 	while(inicial != final){
 		int mitad = length/2;
 		// Nos movemos hasta el nodo de enmedio
-		struct temp = inicial;
+		struct nodo * temp = inicial;
 		int i;
 		for(i=0; i<mitad; i++){
 			temp = temp->siguiente;
@@ -187,64 +191,37 @@ struct nodo * buscar(struct nodo * cabecera, int clave){
 }
 
 int main(){
-    // Declaramos los nodos
-    struct nodo * n1 = NULL;
-    struct nodo * n2 = NULL;
-    struct nodo * n3 = NULL;
-    struct nodo * n4 = NULL;
-    // Tomar memoria
-    n1 = (struct nodo *) malloc(sizeof(struct nodo));
-    if(n1 == NULL) exit(0);
-    n2 = (struct nodo *) malloc(sizeof(struct nodo));
-    if(n2 == NULL) exit(0);
-    n3 = (struct nodo *) malloc(sizeof(struct nodo));
-    if(n3 == NULL) exit(0);
-    n4 = (struct nodo *) malloc(sizeof(struct nodo));
-    if(n4 == NULL) exit(0);
-    // Asignamos datos
-    n1->dato = 9;
-    n2->dato = 7;
-    n3->dato = 4;
-    n4->dato = 6;
-    // Empezamos a enlazar
-    n1->siguiente = n2;
-    n2->siguiente = n3;
-    n3->siguiente = n4;
-    n4->siguiente = NULL;
-    // Imprimir los datos en la lista ligada
-    struct nodo * cabecera = n1;
-    // Recorremos la lista          
-    struct nodo * temp = cabecera;
-    while(temp != NULL){
-        printf("%d->", temp->dato);
-        temp = temp->siguiente;
-    }
-    printf("NULL\n");
-    // Crear un nuevo nodo
-    struct nodo * n5 = crearNodo(10);
-    n4->siguiente = n5;
-    desplegar(cabecera);
+    // Declaramos los apuntadores
+    struct nodo * cabecera = NULL, * final = NULL;
     printf("Operaciones de Insercion: \n");
     // Probar la funcion insertar_inicio
-    cabecera = insertar_inicio(cabecera, 67);
-    cabecera = insertar_inicio(cabecera, 13);
-    cabecera = insertar_inicio(cabecera, 45);
+    insertar_inicio(&cabecera, &final, 67);
+    insertar_inicio(&cabecera, &final, 13);
+    insertar_inicio(&cabecera, &final, 45);
     desplegar(cabecera);
+    printf("Nodo al frente: %d", frente(cabecera));
+    printf("\nNodo al final: %d\n", final_(final));
     // Probar la funcion insertar_final
-    cabecera = insertar_final(cabecera, 12);
-    cabecera = insertar_final(cabecera, 14);
-    cabecera = insertar_final(cabecera, 25);
+    insertar_final(&cabecera, &final, 12);
+    insertar_final(&cabecera, &final, 14);
+    insertar_final(&cabecera, &final, 25);
     desplegar(cabecera);
+    printf("Nodo al frente: %d", frente(cabecera));
+    printf("\nNodo al final: %d\n", final_(final));
     
-    printf("Operaciones de Borrado: \n");
+    printf("\nOperaciones de Borrado: \n");
     // Probar la funcion borrar_inicio
-    cabecera = borrar_inicio(cabecera);
-    cabecera = borrar_inicio(cabecera);
+    borrar_inicio(&cabecera, &final);
+    borrar_inicio(&cabecera, &final);
     desplegar(cabecera);
+    printf("Nodo al frente: %d", frente(cabecera));
+    printf("\nNodo al final: %d\n", final_(final));
     // Probar la funcion borrar_final
-    cabecera = borrar_final(cabecera);
-    cabecera = borrar_final(cabecera);
+    borrar_final(&cabecera, &final);
+    borrar_final(&cabecera, &final);
     desplegar(cabecera);
+    printf("Nodo al frente: %d", frente(cabecera));
+    printf("\nNodo al final: %d\n", final_(final));
     
     printf("Lista Ordenada: \n");
     ordenar(cabecera);
